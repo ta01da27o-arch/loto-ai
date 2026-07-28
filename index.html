@@ -1,0 +1,3261 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>
+
+ロト6・ロト7分析アプリ
+
+</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:sans-serif;
+}
+
+body{
+
+background:#f2f2f2;
+color:#222;
+
+}
+
+header{
+
+background:#1565c0;
+color:#fff;
+
+padding:15px;
+
+text-align:center;
+
+box-shadow:
+0 2px 6px rgba(0,0,0,.2);
+
+}
+
+header h1{
+
+font-size:24px;
+
+margin-bottom:6px;
+
+}
+
+#versionText{
+
+font-size:14px;
+
+font-weight:normal;
+
+}
+
+#todayDate{
+
+font-size:14px;
+
+margin-top:4px;
+
+font-weight:normal;
+
+}
+
+.container{
+
+padding:10px;
+
+}
+
+.card{
+
+background:#fff;
+
+border-radius:10px;
+
+padding:12px;
+
+margin-bottom:12px;
+
+box-shadow:
+0 2px 6px rgba(0,0,0,.2);
+
+}
+
+.card h2{
+
+font-size:18px;
+
+margin-bottom:10px;
+
+}
+
+button{
+
+width:100%;
+
+padding:12px;
+
+margin-top:8px;
+
+border:none;
+
+border-radius:8px;
+
+background:#1976d2;
+
+color:#fff;
+
+font-size:16px;
+
+cursor:pointer;
+
+}
+
+button:active{
+
+transform:scale(.98);
+
+}
+
+input,
+select{
+
+width:100%;
+
+padding:10px;
+
+margin-top:5px;
+
+margin-bottom:10px;
+
+font-size:16px;
+
+border:1px solid #ccc;
+
+border-radius:6px;
+
+}
+
+.numberGrid{
+
+display:grid;
+
+grid-template-columns:
+repeat(7,1fr);
+
+gap:6px;
+
+}
+
+.resultBox{
+
+background:#fafafa;
+
+border:1px solid #ccc;
+
+border-radius:8px;
+
+padding:10px;
+
+min-height:80px;
+
+white-space:pre-wrap;
+
+margin-top:10px;
+
+}
+
+progress{
+
+width:100%;
+
+height:24px;
+
+}
+
+@media(max-width:600px){
+
+header h1{
+
+font-size:20px;
+
+}
+
+button{
+
+font-size:15px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>
+
+ロト6・ロト7分析アプリ
+
+</h1>
+
+<div id="versionText">
+
+Version 3.0.0
+
+</div>
+
+<div id="todayDate">
+
+----
+
+</div>
+
+</header>
+
+<div class="container">
+    
+<!-- ==========================
+Part1-2
+画面レイアウト
+========================== -->
+
+<!-- ゲーム選択 -->
+
+<div class="card">
+
+<h2>
+
+ゲーム選択
+
+</h2>
+
+<select id="gameType">
+
+<option value="loto6">
+
+ロト6
+
+</option>
+
+<option value="loto7">
+
+ロト7
+
+</option>
+
+</select>
+
+<button id="btnChangeGame">
+
+ゲーム切替
+
+</button>
+
+</div>
+
+
+<!-- 抽選データ -->
+
+<div class="card">
+
+<h2>
+
+抽選データ入力
+
+</h2>
+
+<input
+type="number"
+id="drawNo"
+placeholder="抽選回">
+
+<input
+type="date"
+id="drawDate">
+
+<div
+id="numberArea"
+class="numberGrid">
+
+</div>
+
+<button id="btnSave" onclick="saveDraw()">
+  保存
+</button>
+
+</div>
+
+
+<!-- データ管理 -->
+
+<div class="card">
+
+<h2>
+
+データ管理
+
+</h2>
+
+<div
+id="dataStatus"
+class="resultBox">
+
+最終更新：未更新
+
+</div>
+
+<button id="btnUpdate">
+
+🔄 データ更新
+
+</button>
+
+<input
+type="file"
+id="csvFile"
+accept=".csv,text/csv">
+
+<button id="btnCsvLoad">
+
+CSV読込
+
+</button>
+
+<button id="btnCsvSave">
+
+CSV保存
+
+</button>
+
+<button id="btnClear">
+
+全削除
+
+</button>
+
+</div>
+
+
+<!-- 更新状況 -->
+
+<div class="card">
+
+<h2>
+
+更新状況
+
+</h2>
+
+<div
+id="updateStatusBox"
+class="resultBox">
+
+待機中
+
+</div>
+
+<progress
+id="updateProgress"
+value="0"
+max="100">
+
+</progress>
+
+<div
+id="updatePercent">
+
+0%
+
+</div>
+
+<div
+id="updateLog"
+class="resultBox">
+
+更新待機中...
+
+</div>
+
+</div>
+
+
+<!-- 分析 -->
+
+<div class="card">
+
+<h2>
+
+分析メニュー
+
+</h2>
+
+<button id="btnFrequency">
+
+出現回数分析
+
+</button>
+
+<button id="btnMissing">
+
+未出現分析
+
+</button>
+
+<button id="btnCarry">
+
+引っ張り数字分析
+
+</button>
+
+<button id="btnOddEven">
+
+奇数偶数分析
+
+</button>
+
+<button id="btnHighLow">
+
+高低分析
+
+</button>
+
+<button id="btnSum">
+
+合計値分析
+
+</button>
+
+<button id="btnTail">
+
+下一桁分析
+
+</button>
+
+<button id="btnSequence">
+
+連番分析
+
+</button>
+
+<button id="btnPredict">
+
+AI予想
+
+</button>
+
+</div>
+
+
+<!-- 結果 -->
+
+<div class="card">
+
+<h2>
+
+分析結果
+
+</h2>
+
+<div
+id="result"
+class="resultBox">
+
+分析結果がここへ表示されます。
+
+</div>
+
+</div>
+
+<script>    
+    
+/* ==========================
+Part1-3
+基本設定・初期化
+Version 3.0
+========================== */
+
+const APP_VERSION = "3.0.0";
+
+/* ==========================
+状態管理
+========================== */
+
+let game = "loto6";
+
+let draws = [];
+
+let updateRunning = false;
+
+/* ==========================
+最新抽選データ
+========================== */
+
+let latestLoto6 = {
+
+    round : "",
+
+    date : "",
+
+    numbers : []
+
+};
+
+let latestLoto7 = {
+
+    round : "",
+
+    date : "",
+
+    numbers : []
+
+};
+
+/* ==========================
+JSON設定
+========================== */
+
+const DATA_MODE = "json";
+
+const LOTO6_JSON = "data/loto6.json";
+
+const LOTO7_JSON = "data/loto7.json";
+
+/* ==========================
+Version4.0
+データ更新設定
+========================== */
+
+let latestRound={
+
+    loto6:0,
+
+    loto7:0
+
+};
+
+let updateMode="auto";
+
+let firstDownload=false;
+
+/* ==========================
+DOM
+========================== */
+
+const gameType =
+document.getElementById("gameType");
+
+const numberArea =
+document.getElementById("numberArea");
+
+const result =
+document.getElementById("result");
+
+/* ==========================
+本日表示
+========================== */
+
+function updateTodayDate(){
+
+    const now = new Date();
+
+    const week = [
+
+        "日",
+        "月",
+        "火",
+        "水",
+        "木",
+        "金",
+        "土"
+
+    ];
+
+    const y = now.getFullYear();
+
+    const m =
+    String(now.getMonth()+1)
+    .padStart(2,"0");
+
+    const d =
+    String(now.getDate())
+    .padStart(2,"0");
+
+    const w =
+    week[now.getDay()];
+
+    document.getElementById(
+        "todayDate"
+    ).textContent =
+
+    `${y}/${m}/${d}（${w}）`;
+
+}
+
+/* ==========================
+Version表示
+========================== */
+
+function updateVersion(){
+
+    document.getElementById(
+        "versionText"
+    ).textContent =
+
+    "Version " + APP_VERSION;
+
+}
+
+/* ==========================
+Part1-4
+初期化・ゲーム切替
+Version3.0
+========================== */
+
+/* ==========================
+番号入力生成
+========================== */
+
+function createInputs(){
+
+    numberArea.innerHTML = "";
+
+    const max =
+    game==="loto6"
+    ?6
+    :7;
+
+    const limit =
+    game==="loto6"
+    ?43
+    :37;
+
+    for(let i=0;i<max;i++){
+
+        const input =
+        document.createElement("input");
+
+        input.type="number";
+
+        input.id="num"+i;
+
+        input.min=1;
+
+        input.max=limit;
+
+        input.placeholder=i+1;
+
+        numberArea.appendChild(input);
+
+    }
+
+}
+
+/* ==========================
+入力初期化
+========================== */
+
+function resetInputs(){
+
+    document.getElementById("drawNo").value="";
+
+    document.getElementById("drawDate").value="";
+
+    const max =
+    game==="loto6"
+    ?6
+    :7;
+
+    for(let i=0;i<max;i++){
+
+        const input =
+        document.getElementById("num"+i);
+
+        if(input){
+
+            input.value="";
+
+        }
+
+    }
+
+}
+
+/* ==========================
+ゲーム切替
+========================== */
+
+function changeGame(){
+
+    game =
+    gameType.value;
+
+    createInputs();
+
+    resetInputs();
+
+    result.textContent =
+
+    game==="loto6"
+
+    ?
+
+    "ロト6モード"
+
+    :
+
+    "ロト7モード";
+
+}
+
+/* ==========================
+アプリ初期化
+========================== */
+
+function initializeApp(){
+
+updateVersion();
+
+updateTodayDate();
+
+loadLocal();
+
+createInputs();
+
+updateDataStatus();
+
+result.textContent="初期化完了";
+
+}
+
+/* ==========================
+イベント登録
+========================== */
+
+document
+.getElementById("btnChangeGame")
+.addEventListener(
+
+"click",
+
+changeGame
+
+);
+
+
+document
+.getElementById("btnCsvSave")
+.addEventListener(
+"click",
+exportCSV
+);
+
+document
+.getElementById("btnCsvLoad")
+.addEventListener(
+"click",
+function(){
+
+    const file=
+    document
+    .getElementById("csvFile")
+    .files[0];
+
+    if(!file){
+
+        alert("CSVファイルを選択してください。");
+
+        return;
+
+    }
+
+    importCSV(file);
+
+});
+
+document
+.getElementById("btnClear")
+.addEventListener(
+"click",
+clearData
+);
+
+document
+.getElementById("btnFrequency")
+.addEventListener(
+"click",
+analyzeFrequency
+);
+
+document
+.getElementById("btnMissing")
+.addEventListener(
+"click",
+analyzeMissing
+);
+
+document
+.getElementById("btnOddEven")
+.addEventListener(
+"click",
+analyzeOddEven
+);
+
+document
+.getElementById("btnHighLow")
+.addEventListener(
+"click",
+analyzeHighLow
+);
+
+document
+.getElementById("btnSum")
+.addEventListener(
+"click",
+analyzeSum
+);
+
+document
+.getElementById("btnTail")
+.addEventListener(
+"click",
+analyzeTail
+);
+
+document
+.getElementById("btnSequence")
+.addEventListener(
+"click",
+analyzeSequence
+);
+
+document
+.getElementById("btnPredict")
+.addEventListener(
+"click",
+predictNumbers
+);
+
+document
+.getElementById("btnCarry")
+.addEventListener(
+"click",
+analyzeCarryOver
+);
+
+document
+.getElementById("btnUpdate")
+.addEventListener(
+
+"click",
+
+startUpdate
+
+);
+
+/* ==========================
+Part2-1
+保存データ管理
+Version 3.0
+========================== */
+
+/* 保存 */
+
+function saveLocal(){
+
+    localStorage.setItem(
+
+        "lotoData",
+
+        JSON.stringify(draws)
+
+    );
+
+}
+
+/* 読込 */
+
+function loadLocal(){
+
+    const data=
+
+    localStorage.getItem(
+
+        "lotoData"
+
+    );
+
+    if(data){
+
+        draws=
+
+        JSON.parse(data);
+
+    }
+
+}
+
+/* 保存件数 */
+
+function getGameCount(targetGame){
+
+    let count=0;
+
+    draws.forEach(draw=>{
+
+        if(draw.game===targetGame){
+
+            count++;
+
+        }
+
+    });
+
+    return count;
+
+}
+
+/* 保存状況表示 */
+
+function updateDataStatus(){
+
+    const loto6=
+
+    getGameCount("loto6");
+
+    const loto7=
+
+    getGameCount("loto7");
+
+    document.getElementById(
+
+        "dataStatus"
+
+    ).innerHTML=
+
+    "ロト6保存件数："+loto6+"件<br>"+
+
+    "ロト7保存件数："+loto7+"件";
+
+}
+
+/* ==========================
+Part2-2
+保存機能
+Version 3.0
+========================== */
+
+function saveDraw(){
+
+    const count =
+        game==="loto6"
+        ?6
+        :7;
+
+    const draw={
+
+        game:game,
+
+        round:
+        document.getElementById("drawNo").value,
+
+        date:
+        document.getElementById("drawDate").value,
+
+        numbers:[]
+
+    };
+
+    if(draw.round===""){
+
+        alert("抽選回を入力してください。");
+
+        return;
+
+    }
+
+    if(draw.date===""){
+
+        alert("抽選日を入力してください。");
+
+        return;
+
+    }
+
+    for(let i=0;i<count;i++){
+
+        const value=parseInt(
+
+            document.getElementById(
+
+                "num"+i
+
+            ).value
+
+        );
+
+        if(isNaN(value)){
+
+            alert(
+
+                (i+1)+"個目の番号を入力してください。"
+
+            );
+
+            return;
+
+        }
+
+        draw.numbers.push(value);
+
+    }
+
+    const exists=
+
+    draws.some(d=>
+
+        d.game===draw.game &&
+
+        d.round===draw.round
+
+    );
+
+    if(exists){
+
+        alert("この抽選回は登録済みです。");
+
+        return;
+
+    }
+
+
+draws.push(draw);
+
+saveLocal();
+
+// 保存できているか確認
+loadLocal();
+
+updateDataStatus();
+
+document.getElementById("result").textContent =
+"保存しました。\n\n"+
+"保存データ数："+draws.length+"件\n"+
+"ロト6："+getGameCount("loto6")+"件\n"+
+"ロト7："+getGameCount("loto7")+"件";
+
+}
+
+/* ==========================
+Part2-3
+CSV保存・CSV読込
+Version 3.0
+========================== */
+
+/* CSV保存 */
+
+function exportCSV(){
+
+    if(draws.length===0){
+
+        alert("保存データがありません。");
+
+        return;
+
+    }
+
+    let csv="game,round,date,numbers\n";
+
+    draws.forEach(draw=>{
+
+        csv +=
+        draw.game + "," +
+        draw.round + "," +
+        draw.date + "," +
+        draw.numbers.join("-") +
+        "\n";
+
+    });
+
+    const blob =
+    new Blob([csv],{
+        type:"text/csv"
+    });
+
+    const url =
+    URL.createObjectURL(blob);
+
+    const a =
+    document.createElement("a");
+
+    a.href=url;
+
+    a.download="loto_data.csv";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+}
+
+/* CSV読込 */
+
+function importCSV(file){
+
+    const reader =
+    new FileReader();
+
+    reader.onload=function(e){
+
+        const text =
+        e.target.result;
+
+        const lines =
+        text.trim().split("\n");
+
+        draws=[];
+
+        for(let i=1;i<lines.length;i++){
+
+            const row=
+            lines[i].split(",");
+
+            if(row.length<4) continue;
+
+            draws.push({
+
+                game:row[0],
+
+                round:row[1],
+
+                date:row[2],
+
+                numbers:
+                row[3]
+                .split("-")
+                .map(Number)
+
+            });
+
+        }
+
+        saveLocal();
+
+        updateDataStatus();
+
+        result.textContent=
+        "CSV読込完了\n\n"+
+        "保存件数："+draws.length+"件";
+
+    };
+
+    reader.readAsText(file);
+
+}
+
+/* ==========================
+Part2-4
+全削除機能
+Version 3.0
+========================== */
+
+function clearData(){
+
+    if(!confirm("保存データをすべて削除しますか？")){
+
+        return;
+
+    }
+
+    draws=[];
+
+    localStorage.removeItem("lotoData");
+
+    updateDataStatus();
+
+    resetInputs();
+
+    result.textContent=
+    "保存データをすべて削除しました。";
+
+    alert("削除が完了しました。");
+
+}
+
+/* ==========================
+Version4.0
+更新開始
+========================== */
+
+async function startUpdate(){
+
+    if(updateRunning){
+
+        return;
+
+    }
+
+    updateRunning=true;
+
+    document.getElementById(
+        "updateStatusBox"
+    ).textContent=
+
+    "更新開始...";
+
+    document.getElementById(
+        "updateProgress"
+    ).value=0;
+
+    document.getElementById(
+        "updatePercent"
+    ).textContent="0%";
+
+    document.getElementById(
+        "updateLog"
+    ).textContent=
+
+    "更新準備中...";
+
+    try{
+
+        await checkLatestData();
+
+    }
+
+    catch(error){
+
+        document.getElementById(
+            "updateLog"
+        ).textContent=
+
+        "エラー："+error.message;
+
+    }
+
+    updateRunning=false;
+
+}
+
+/* ==========================
+Version4.0
+データ取得設定
+GitHub JSON
+========================== */
+
+const DATA_SOURCE={
+
+    loto6:
+    "https://raw.githubusercontent.com/【GitHubユーザー名】/【リポジトリ名】/main/data/loto6.json",
+
+    loto7:
+    "https://raw.githubusercontent.com/【GitHubユーザー名】/【リポジトリ名】/main/data/loto7.json"
+
+};
+
+async function checkLatestData(){
+
+    try{
+
+        document.getElementById(
+            "updateStatusBox"
+        ).textContent=
+
+        "GitHub接続中...";
+
+        document.getElementById(
+            "updateProgress"
+        ).value=20;
+
+        document.getElementById(
+            "updatePercent"
+        ).textContent="20%";
+
+        document.getElementById(
+            "updateLog"
+        ).textContent=
+
+        "ロト6データへ接続しています...";
+
+        const response=
+
+        await fetch(
+
+            DATA_SOURCE.loto6
+
+        );
+
+        if(!response.ok){
+
+            throw new Error(
+
+                "データ取得失敗"
+
+            );
+
+        }
+
+        document.getElementById(
+            "updateProgress"
+        ).value=100;
+
+        document.getElementById(
+            "updatePercent"
+        ).textContent="100%";
+
+        document.getElementById(
+            "updateStatusBox"
+        ).textContent=
+
+        "接続成功";
+
+        document.getElementById(
+            "updateLog"
+        ).textContent=
+
+        "GitHubへ正常接続しました。";
+
+    }
+
+    catch(error){
+
+        document.getElementById(
+            "updateStatusBox"
+        ).textContent=
+
+        "接続失敗";
+
+        document.getElementById(
+            "updateLog"
+        ).textContent=
+
+        error.message;
+
+    }
+
+}
+
+/* ==========================
+Part3-1
+出現回数分析
+Version 3.0
+========================== */
+
+function analyzeFrequency(){
+
+    const max =
+    game==="loto6"
+    ?43
+    :37;
+
+    const count =
+    new Array(max+1).fill(0);
+
+    draws.forEach(draw=>{
+
+        if(draw.game!==game){
+
+            return;
+
+        }
+
+        draw.numbers.forEach(num=>{
+
+            if(
+                num>=1 &&
+                num<=max
+            ){
+
+                count[num]++;
+
+            }
+
+        });
+
+    });
+
+    let text="";
+
+    text+=
+    game==="loto6"
+    ?"【ロト6】\n\n"
+    :"【ロト7】\n\n";
+
+    text+="出現回数分析\n\n";
+
+    for(let i=1;i<=max;i++){
+
+        text+=
+
+        i+" ： "+count[i]+"回\n";
+
+    }
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part3-2
+未出現分析
+Version 3.0
+========================== */
+
+function analyzeMissing(){
+
+    const max =
+    game==="loto6"
+    ?43
+    :37;
+
+    const targetDraws =
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent=
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    const lastSeen =
+    new Array(max+1).fill(-1);
+
+    targetDraws.forEach((draw,index)=>{
+
+        draw.numbers.forEach(num=>{
+
+            if(
+                num>=1 &&
+                num<=max
+            ){
+
+                lastSeen[num]=index;
+
+            }
+
+        });
+
+    });
+
+    const latest =
+    targetDraws.length-1;
+
+    let text="";
+
+    text+=
+    game==="loto6"
+    ?"【ロト6】\n\n"
+    :"【ロト7】\n\n";
+
+    text+="未出現分析\n\n";
+
+    for(let i=1;i<=max;i++){
+
+        let miss;
+
+        if(lastSeen[i]===-1){
+
+            miss=
+            targetDraws.length;
+
+        }else{
+
+            miss=
+            latest-lastSeen[i];
+
+        }
+
+        text+=
+        i+" ： "+
+        miss+
+        "回未出現\n";
+
+    }
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part3-3
+奇数・偶数分析
+Version 3.0
+========================== */
+
+function analyzeOddEven(){
+
+    const targetDraws =
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent=
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    const patternCount={};
+
+    targetDraws.forEach(draw=>{
+
+        let odd=0;
+        let even=0;
+
+        draw.numbers.forEach(num=>{
+
+            if(num%2===0){
+
+                even++;
+
+            }else{
+
+                odd++;
+
+            }
+
+        });
+
+        const key=
+        odd+"奇-"+even+"偶";
+
+        if(!patternCount[key]){
+
+            patternCount[key]=0;
+
+        }
+
+        patternCount[key]++;
+
+    });
+
+    let text="";
+
+    text+=
+    game==="loto6"
+    ?"【ロト6】\n\n"
+    :"【ロト7】\n\n";
+
+    text+="奇数・偶数分析\n\n";
+
+    Object.keys(patternCount)
+    .sort()
+    .forEach(key=>{
+
+        text+=
+        key+
+        " ： "+
+        patternCount[key]+
+        "回\n";
+
+    });
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part3-4
+高低分析
+Version 3.0
+========================== */
+
+function analyzeHighLow(){
+
+    const targetDraws =
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent=
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    const border =
+    game==="loto6"
+    ?21
+    :18;
+
+    const patternCount={};
+
+    targetDraws.forEach(draw=>{
+
+        let low=0;
+        let high=0;
+
+        draw.numbers.forEach(num=>{
+
+            if(num<=border){
+
+                low++;
+
+            }else{
+
+                high++;
+
+            }
+
+        });
+
+        const key=
+        low+"低-"+high+"高";
+
+        if(!patternCount[key]){
+
+            patternCount[key]=0;
+
+        }
+
+        patternCount[key]++;
+
+    });
+
+    let text="";
+
+    text+=
+    game==="loto6"
+    ?"【ロト6】\n\n"
+    :"【ロト7】\n\n";
+
+    text+="高低分析\n\n";
+
+    Object.keys(patternCount)
+    .sort()
+    .forEach(key=>{
+
+        text+=
+        key+
+        " ： "+
+        patternCount[key]+
+        "回\n";
+
+    });
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part3-5
+合計値分析
+Version 3.0
+========================== */
+
+function analyzeSum(){
+
+    const targetDraws =
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent=
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    let totalSum=0;
+
+    let minSum=9999;
+
+    let maxSum=0;
+
+    let text="";
+
+    text+=
+    game==="loto6"
+    ?"【ロト6】\n\n"
+    :"【ロト7】\n\n";
+
+    text+="合計値分析\n\n";
+
+    targetDraws.forEach(draw=>{
+
+        const sum=
+
+        draw.numbers.reduce(
+
+            (a,b)=>a+b,
+
+            0
+
+        );
+
+        totalSum+=sum;
+
+        if(sum<minSum){
+
+            minSum=sum;
+
+        }
+
+        if(sum>maxSum){
+
+            maxSum=sum;
+
+        }
+
+        text+=
+
+        "第"+draw.round+"回 ： "+sum+"\n";
+
+    });
+
+    const average=
+
+    (
+        totalSum/
+        targetDraws.length
+    ).toFixed(1);
+
+    text+=
+
+    "\n------------------\n";
+
+    text+=
+
+    "平均："+average+"\n";
+
+    text+=
+
+    "最小："+minSum+"\n";
+
+    text+=
+
+    "最大："+maxSum;
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part3-6
+下一桁分析
+Version 3.0
+========================== */
+
+function analyzeTail(){
+
+    const targetDraws =
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent =
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    const tailCount =
+    new Array(10).fill(0);
+
+    targetDraws.forEach(draw=>{
+
+        draw.numbers.forEach(num=>{
+
+            const tail = num % 10;
+
+            tailCount[tail]++;
+
+        });
+
+    });
+
+    let text = "";
+
+    text +=
+    game==="loto6"
+    ?"【ロト6】\n\n"
+    :"【ロト7】\n\n";
+
+    text += "下一桁分析\n\n";
+
+    for(let i=0;i<=9;i++){
+
+        text +=
+        i+" ： "+
+        tailCount[i]+"回\n";
+
+    }
+
+    text += "\n------------------\n";
+
+    let maxTail = 0;
+    let minTail = 0;
+
+    for(let i=1;i<=9;i++){
+
+        if(tailCount[i] > tailCount[maxTail]){
+
+            maxTail = i;
+
+        }
+
+        if(tailCount[i] < tailCount[minTail]){
+
+            minTail = i;
+
+        }
+
+    }
+
+    text +=
+    "最多："+
+    maxTail+
+    " ("+
+    tailCount[maxTail]+
+    "回)\n";
+
+    text +=
+    "最少："+
+    minTail+
+    " ("+
+    tailCount[minTail]+
+    "回)";
+
+    result.textContent = text;
+
+}
+
+/* ==========================
+Part5-3A
+連番分析
+Version3.2
+========================== */
+
+function analyzeSequence(){
+
+    const targetDraws=
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent=
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    let totalPair=0;
+
+    let hitDraw=0;
+
+    targetDraws.forEach(draw=>{
+
+        const nums=
+
+        [...draw.numbers]
+
+        .sort((a,b)=>a-b);
+
+        let found=false;
+
+        for(
+
+            let i=0;
+
+            i<nums.length-1;
+
+            i++
+
+        ){
+
+            if(
+
+                nums[i]+1===nums[i+1]
+
+            ){
+
+                totalPair++;
+
+                found=true;
+
+            }
+
+        }
+
+        if(found){
+
+            hitDraw++;
+
+        }
+
+    });
+
+    const rate=
+
+    (
+
+        hitDraw/
+
+        targetDraws.length*
+
+        100
+
+    ).toFixed(1);
+
+    let text="";
+
+    text+="【連番分析】\n\n";
+
+    text+="対象抽選："+targetDraws.length+"回\n";
+
+    text+="連番出現回："+hitDraw+"回\n";
+
+    text+="連番総数："+totalPair+"組\n";
+
+    text+="出現率："+rate+"％";
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part5-1B
+引っ張り数字分析（完成版）
+Version3.2
+========================== */
+
+function analyzeCarryOver(){
+
+    const targetDraws=
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length<2){
+
+        result.textContent=
+        "2回以上の抽選データが必要です。";
+
+        return;
+
+    }
+
+    const lastDraw=
+    targetDraws[targetDraws.length-1];
+
+    const prevDraw=
+    targetDraws[targetDraws.length-2];
+
+    /* 今回の引っ張り数字 */
+
+    const carry=[];
+
+    lastDraw.numbers.forEach(num=>{
+
+        if(prevDraw.numbers.includes(num)){
+
+            carry.push(num);
+
+        }
+
+    });
+
+    /* 過去全体の引っ張り率 */
+
+    let totalCarry=0;
+
+    let totalCompare=0;
+
+    for(
+
+        let i=1;
+
+        i<targetDraws.length;
+
+        i++
+
+    ){
+
+        const before=
+
+        targetDraws[i-1];
+
+        const current=
+
+        targetDraws[i];
+
+        current.numbers.forEach(num=>{
+
+            totalCompare++;
+
+            if(
+
+                before.numbers.includes(num)
+
+            ){
+
+                totalCarry++;
+
+            }
+
+        });
+
+    }
+
+    const rate=
+
+    totalCompare===0
+
+    ?0
+
+    :(
+
+        totalCarry/
+
+        totalCompare*
+
+        100
+
+    ).toFixed(1);
+
+    let text="";
+
+    text+="【引っ張り数字分析】\n\n";
+
+    text+="前回抽選\n";
+
+    text+="第"+prevDraw.round+"回\n";
+
+    text+="抽選日："+(prevDraw.date||"-")+"\n";
+
+    text+=prevDraw.numbers.join(" ");
+
+    text+="\n\n";
+
+    text+="最新抽選\n";
+
+    text+="第"+lastDraw.round+"回\n";
+
+    text+="抽選日："+(lastDraw.date||"-")+"\n";
+
+    text+=lastDraw.numbers.join(" ");
+
+    text+="\n\n";
+
+    if(carry.length===0){
+
+        text+="引っ張り数字：なし\n";
+
+    }else{
+
+        text+="引っ張り数字\n";
+
+        text+=carry.join(" ");
+
+        text+="\n";
+
+    }
+
+    text+="\n";
+
+    text+="今回："+carry.length+"個\n";
+
+    text+="過去累計："+totalCarry+"個\n";
+
+    text+="比較総数："+totalCompare+"個\n";
+
+    text+="引っ張り率："+rate+"％";
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+Part4-5A
+完成版AIエンジン
+Version3.1
+========================== */
+
+function predictNumbers(){
+
+    const max=
+    game==="loto6"
+    ?43
+    :37;
+
+    const pick=
+    game==="loto6"
+    ?6
+    :7;
+
+    const border=
+    game==="loto6"
+    ?21
+    :18;
+
+    const targetDraws=
+    draws.filter(
+        d=>d.game===game
+    );
+
+    if(targetDraws.length===0){
+
+        result.textContent=
+        "保存データがありません。";
+
+        return;
+
+    }
+
+    /* =====================
+    スコア
+    ===================== */
+
+    const score=
+    new Array(max+1).fill(0);
+
+/* =====================
+AIスコア内訳
+Version3.3
+===================== */
+
+const scoreDetail=[];
+
+for(let i=0;i<=max;i++){
+
+    scoreDetail[i]={
+
+        frequency:0,
+
+        missing:0,
+
+        carry:0,
+
+        repeat:0,
+
+        pair:0,
+
+        cycle:0,
+
+        hot:0,
+        
+        tail:0
+    };
+
+}
+
+    /* 出現回数 */
+
+ targetDraws.forEach(draw=>{
+
+    draw.numbers.forEach(num=>{
+
+        score[num]+=2;
+
+        scoreDetail[num].frequency+=2;
+
+    });
+
+});
+    
+    /* 未出現 */
+    
+targetDraws.forEach(draw=>{
+
+    draw.numbers.forEach(num=>{
+
+        score[num]+=2;
+
+        scoreDetail[num].frequency+=2;
+
+    });
+
+});
+    const lastSeen=
+    new Array(max+1).fill(-1);
+
+    targetDraws.forEach(
+
+    (draw,index)=>{
+
+        draw.numbers.forEach(num=>{
+
+            lastSeen[num]=index;
+
+        });
+
+    });
+
+    const latest=
+    targetDraws.length-1;
+
+    for(
+
+    let i=1;
+
+    i<=max;
+
+    i++
+
+){
+
+    let addPoint=0;
+
+    if(
+
+        lastSeen[i]===-1
+
+    ){
+
+        addPoint=
+
+        targetDraws.length;
+
+    }
+
+    else{
+
+        addPoint=
+
+        latest-
+
+        lastSeen[i];
+
+    }
+
+    score[i]+=addPoint;
+
+    scoreDetail[i].missing+=addPoint;
+
+}
+
+/* =====================
+引っ張り数字加点
+Version3.3
+===================== */
+
+if(targetDraws.length>=2){
+
+    const prev=
+
+    targetDraws[
+        targetDraws.length-2
+    ].numbers;
+
+    prev.forEach(num=>{
+
+        score[num]+=3;
+
+        scoreDetail[num].carry+=3;
+
+    });
+
+}
+
+/* =====================
+リピート数字加点
+Version3.3
+===================== */
+
+if(targetDraws.length>=1){
+
+    const lastNumbers=
+    targetDraws[
+        targetDraws.length-1
+    ].numbers;
+
+    lastNumbers.forEach(num=>{
+
+        score[num]+=4;
+
+        scoreDetail[num].repeat+=4;
+
+    });
+
+}
+
+/* =====================
+ペア数字加点
+===================== */
+
+targetDraws.forEach(draw=>{
+
+    draw.numbers.forEach(a=>{
+
+        draw.numbers.forEach(b=>{
+
+            if(a!==b){
+
+                score[a]+=0.2;
+
+scoreDetail[a].pair+=0.2;
+
+            }
+
+        });
+
+    });
+
+});
+
+/* =====================
+周期分析加点
+Version3.3
+===================== */
+
+for(let num=1;num<=max;num++){
+
+    const hitIndex=[];
+
+    targetDraws.forEach((draw,index)=>{
+
+        if(draw.numbers.includes(num)){
+
+            hitIndex.push(index);
+
+        }
+
+    });
+
+    if(hitIndex.length>=2){
+
+        let total=0;
+
+        for(let i=1;i<hitIndex.length;i++){
+
+            total+=
+
+            hitIndex[i]-hitIndex[i-1];
+
+        }
+
+        const averageCycle=
+
+        total/(hitIndex.length-1);
+
+        const currentCycle=
+
+        targetDraws.length-1-
+
+        hitIndex[hitIndex.length-1];
+
+        const diff=
+
+        Math.abs(
+
+        averageCycle-
+
+        currentCycle
+
+        );
+
+        const addPoint=
+Math.max(
+    0,
+    5-diff
+);
+
+score[num]+=addPoint;
+
+scoreDetail[num].cycle+=addPoint;
+    }
+
+}
+
+/* =====================
+ホット＆コールド分析
+Version3.3
+===================== */
+
+const recentCount=
+Math.min(10,targetDraws.length);
+
+const recentDraws=
+targetDraws.slice(-recentCount);
+
+const hotScore=
+new Array(max+1).fill(0);
+
+recentDraws.forEach(draw=>{
+
+    draw.numbers.forEach(num=>{
+
+        hotScore[num]++;
+
+    });
+
+});
+
+for(let i=1;i<=max;i++){
+
+    const addPoint=
+    hotScore[i]*0.8;
+
+    score[i]+=addPoint;
+
+    scoreDetail[i].hot+=addPoint;
+
+}
+
+/* =====================
+コールド数字分析
+Version3.7
+===================== */
+
+const coldCount=
+Math.min(30,targetDraws.length);
+
+const coldDraws=
+targetDraws.slice(-coldCount);
+
+const coldScore=
+new Array(max+1).fill(0);
+
+coldDraws.forEach(draw=>{
+
+    draw.numbers.forEach(num=>{
+
+        coldScore[num]++;
+
+    });
+
+});
+
+for(let i=1;i<=max;i++){
+
+    if(coldScore[i]<=1){
+
+        score[i]+=1.5;
+
+        scoreDetail[i].hot+=1.5;
+
+    }
+
+}
+
+/* =====================
+数字帯分析
+Version3.7
+===================== */
+
+const zoneScore=[0,0,0,0,0];
+
+targetDraws.forEach(draw=>{
+
+    draw.numbers.forEach(num=>{
+
+        if(num<=10){
+
+            zoneScore[0]++;
+
+        }
+
+        else if(num<=20){
+
+            zoneScore[1]++;
+
+        }
+
+        else if(num<=30){
+
+            zoneScore[2]++;
+
+        }
+
+        else if(num<=40){
+
+            zoneScore[3]++;
+
+        }
+
+        else{
+
+            zoneScore[4]++;
+
+        }
+
+    });
+
+});
+
+for(let i=1;i<=max;i++){
+
+    let zone=0;
+
+    if(i<=10){
+
+        zone=0;
+
+    }
+
+    else if(i<=20){
+
+        zone=1;
+
+    }
+
+    else if(i<=30){
+
+        zone=2;
+
+    }
+
+    else if(i<=40){
+
+        zone=3;
+
+    }
+
+    else{
+
+        zone=4;
+
+    }
+
+    const addPoint=zoneScore[zone]*0.05;
+
+    score[i]+=addPoint;
+
+}
+
+/* =====================
+下一桁分析加点
+Version3.5
+===================== */
+
+const tailScore=
+new Array(10).fill(0);
+
+targetDraws.forEach(draw=>{
+
+    draw.numbers.forEach(num=>{
+
+        tailScore[num%10]++;
+
+    });
+
+});
+
+for(let i=1;i<=max;i++){
+
+    const addPoint=
+    tailScore[i%10]*0.3;
+
+    score[i]+=addPoint;
+    scoreDetail[i].tail+=addPoint;
+}
+
+/* =====================
+引っ張り数字補正
+===================== */
+
+if(targetDraws.length>=1){
+
+    const lastDraw=
+
+    targetDraws[
+        targetDraws.length-1
+    ];
+
+    lastDraw.numbers.forEach(num=>{
+
+        score[num]+=3;
+
+    });
+
+}
+
+/* =====================
+連続出現補正
+===================== */
+
+if(targetDraws.length>=2){
+
+    const lastDraw=
+    targetDraws[targetDraws.length-1];
+
+    const prevDraw=
+    targetDraws[targetDraws.length-2];
+
+    lastDraw.numbers.forEach(num=>{
+
+        if(prevDraw.numbers.includes(num)){
+
+            score[num]+=2;
+
+        }
+
+    });
+
+}
+
+if(targetDraws.length>=3){
+
+    const lastDraw=
+    targetDraws[targetDraws.length-1];
+
+    const prevDraw=
+    targetDraws[targetDraws.length-2];
+
+    const prev2Draw=
+    targetDraws[targetDraws.length-3];
+
+    lastDraw.numbers.forEach(num=>{
+
+        if(
+
+            prevDraw.numbers.includes(num) &&
+            prev2Draw.numbers.includes(num)
+
+        ){
+
+            score[num]+=3;
+
+        }
+
+    });
+
+}
+
+    /* =====================
+    ランキング
+    ===================== */
+
+    const ranking=[];
+
+    for(
+
+        let i=1;
+
+        i<=max;
+
+        i++
+
+    ){
+
+        ranking.push({
+
+            num:i,
+
+            score:score[i]
+
+        });
+
+    }
+
+    ranking.sort(
+
+    (a,b)=>
+
+        b.score-
+
+        a.score
+
+    );
+
+/* =====================
+AI注目数字ランキング
+Version3.4
+===================== */
+
+const aiTop10=
+ranking
+.slice(0,10)
+.map(item=>item.num);
+
+    /* =====================
+    過去平均
+    ===================== */
+
+    let historySum=0;
+
+    targetDraws.forEach(draw=>{
+
+        historySum+=
+
+        draw.numbers.reduce(
+
+        (a,b)=>a+b,
+
+        0
+
+        );
+
+    });
+
+    const averageSum=
+
+    historySum/
+
+    targetDraws.length;
+
+    /* =====================
+    Part4-5Bへ渡す
+    ===================== */
+
+    /* =====================
+    AI予想5組生成
+    ===================== */
+
+    const predicts=[];
+
+    const used=new Set();
+
+    while(predicts.length<5){
+
+        const candidate=[];
+
+        let odd=0;
+
+        let even=0;
+
+        let low=0;
+
+        let high=0;
+
+        let sum=0;
+
+        let sumScore=0;
+
+        for(let i=0;i<ranking.length;i++){
+
+            if(candidate.length>=pick){
+
+                break;
+
+            }
+
+            const n=ranking[i].num;
+
+            if(candidate.includes(n)){
+
+                continue;
+
+            }
+
+            const isOdd=
+            n%2===1;
+
+            const isLow=
+            n<=border;
+
+            if(
+
+                isOdd &&
+                odd>=Math.ceil(pick/2)
+
+            ){
+
+                continue;
+
+            }
+
+            if(
+
+                !isOdd &&
+                even>=Math.floor(pick/2)
+
+            ){
+
+                continue;
+
+            }
+
+            if(
+
+                isLow &&
+                low>=Math.ceil(pick/2)
+
+            ){
+
+                continue;
+
+            }
+
+            if(
+
+                !isLow &&
+                high>=Math.floor(pick/2)
+
+            ){
+
+                continue;
+
+            }
+
+            /* 少しランダム性追加 */
+
+            if(
+
+                Math.random()<0.25
+
+            ){
+
+                continue;
+
+            }
+
+            candidate.push(n);
+
+            sum+=n;
+
+        sumScore=100-Math.abs(sum-averageSum);
+
+            if(isOdd){
+
+                odd++;
+
+            }else{
+
+                even++;
+
+            }
+
+            if(isLow){
+
+                low++;
+
+            }else{
+
+                high++;
+
+            }
+
+        }
+
+        if(candidate.length!==pick){
+
+            continue;
+
+        }
+
+/* =====================
+奇数・偶数バランス補正
+Version3.6
+===================== */
+
+let oddBalance=0;
+
+const idealOdd=
+Math.round(pick/2);
+
+if(
+
+    odd===idealOdd
+
+){
+
+    oddBalance=3;
+
+}
+
+else if(
+
+    Math.abs(
+
+        odd-idealOdd
+
+    )===1
+
+){
+
+    oddBalance=1;
+
+}
+
+sumScore+=oddBalance;
+
+/* =====================
+高低バランス補正
+Version3.6
+===================== */
+
+let highLowBonus=0;
+
+const idealLow=
+Math.round(pick/2);
+
+if(
+
+    low===idealLow
+
+){
+
+    highLowBonus=3;
+
+}
+
+else if(
+
+    Math.abs(
+
+        low-idealLow
+
+    )===1
+
+){
+
+    highLowBonus=1;
+
+}
+
+sumScore+=highLowBonus;
+
+/* =====================
+連番ボーナス
+Version3.6
+===================== */
+
+let sequenceBonus=0;
+
+for(
+
+    let i=1;
+
+    i<candidate.length;
+
+    i++
+
+){
+
+    if(
+
+        candidate[i]===
+
+        candidate[i-1]+1
+
+    ){
+
+        sequenceBonus+=2;
+
+    }
+
+}
+
+sumScore+=sequenceBonus;
+
+/* =====================
+下一桁ボーナス
+Version3.6
+===================== */
+
+let tailBonus=0;
+
+const tailCount={};
+
+candidate.forEach(n=>{
+
+    const tail=n%10;
+
+    tailCount[tail]=(tailCount[tail]||0)+1;
+
+});
+
+Object.values(tailCount).forEach(count=>{
+
+    if(count===2){
+
+        tailBonus+=2;
+
+    }
+
+    else if(count>=3){
+
+        tailBonus+=5;
+
+    }
+
+});
+
+sumScore+=tailBonus;
+
+        candidate.sort((a,b)=>a-b);
+
+/* =====================
+ペア相性ボーナス
+===================== */
+
+let pairBonus=0;
+
+for(let i=0;i<candidate.length;i++){
+
+    for(let j=i+1;j<candidate.length;j++){
+
+        targetDraws.forEach(draw=>{
+
+            if(
+
+                draw.numbers.includes(candidate[i])&&
+                draw.numbers.includes(candidate[j])
+
+            ){
+
+                pairBonus++;
+
+            }
+
+        });
+
+    }
+
+}
+
+/* =====================
+最終スコア補正
+Version3.6
+===================== */
+
+if(
+
+    sum>=averageSum-10 &&
+
+    sum<=averageSum+10
+
+){
+
+    sumScore+=3;
+
+}
+
+if(
+
+    sequenceBonus>=2
+
+){
+
+    sumScore+=1;
+
+}
+
+if(
+
+    tailBonus>=2
+
+){
+
+    sumScore+=1;
+
+}
+
+        const key=
+
+        candidate.join("-");
+
+        if(
+
+            used.has(key)
+
+        ){
+
+            continue;
+
+        }
+
+        used.add(key);
+
+        predicts.push({
+
+    numbers:candidate,
+
+    score:
+
+    Math.round(
+
+        sumScore+
+
+        pairBonus
+
+    )
+
+});
+
+    }
+
+    predicts.sort(
+
+    (a,b)=>
+
+    b.score-a.score
+
+    );
+
+/* =====================
+AI信頼度
+Version3.7
+===================== */
+
+let aiConfidence=0;
+
+if(predicts.length>0){
+
+    aiConfidence=Math.min(
+
+        99,
+
+        Math.max(
+
+            50,
+
+            Math.round(
+
+                predicts[0].score
+
+            )
+
+        )
+
+    );
+
+}
+
+/* =====================
+AI安定性
+Version3.7
+===================== */
+
+let aiLevel="混戦";
+
+if(predicts.length>=2){
+
+    const diff=
+
+    predicts[0].score-
+
+    predicts[1].score;
+
+    if(diff>=8){
+
+        aiLevel="本命";
+
+    }
+
+    else if(diff>=4){
+
+        aiLevel="やや本命";
+
+    }
+
+}
+
+    let text="";
+
+    text+="【AI予想】\n\n";
+
+text+="AI信頼度："+aiConfidence+"％\n\n";
+
+text+="AI傾向："+aiLevel+"\n\n";
+
+    predicts.forEach(
+
+    (row,index)=>{
+
+        text+=
+
+        "候補"+
+
+        (index+1)+
+
+        "  ";
+
+        text+=
+
+        "Score:"+row.score+
+
+        "\n";
+
+        text+=
+
+        row.numbers.join(" ");
+
+        text+="\n\n";
+
+    });
+
+text+="------------------\n";
+
+text+="AI注目数字\n";
+
+text+=
+
+aiTop10.join(" ・ ");
+
+text+="\n\n";
+
+text+="【AIスコア内訳 TOP5】\n\n";
+
+for(let i=0;i<5;i++){
+
+    const n=aiTop10[i];
+
+    text+=
+    n+"番  ";
+
+    text+="出現:"+scoreDetail[n].frequency.toFixed(1);
+
+    text+="  未:"+scoreDetail[n].missing.toFixed(1);
+
+    text+="  引:"+scoreDetail[n].carry.toFixed(1);
+
+    text+="  リ:"+scoreDetail[n].repeat.toFixed(1);
+
+    text+="  ペ:"+scoreDetail[n].pair.toFixed(1);
+
+    text+="  周:"+scoreDetail[n].cycle.toFixed(1);
+
+    text+="  Hot:"+scoreDetail[n].hot.toFixed(1);
+
+    text+="  尾:"+scoreDetail[n].tail.toFixed(1);
+
+text+="\n\n";
+
+}
+
+    result.textContent=text;
+
+}
+
+/* ==========================
+起動
+========================== */
+
+window.onload=function(){
+
+    initializeApp();
+
+};  
+
+</script>
+
+</body>
+
+</html>  
