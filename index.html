@@ -1412,15 +1412,25 @@ if(importCount>0){
         ).textContent=
         "取得完了";
 
-        document.getElementById(
-    "updateLog"
-).textContent=
+        let message="";
 
-"ロト6："+loto6.length+
-"件 / ロト7："+loto7.length+
-"件\n"+
-"追加："+importCount+"件";
-        
+message+="ロト6："+loto6.length+"件\n";
+
+message+="ロト7："+loto7.length+"件\n\n";
+
+if(importCount===0){
+
+    message+="最新データです。";
+
+}else{
+
+    message+="新規追加："+importCount+"件";
+
+}
+
+document.getElementById(
+    "updateLog"
+).textContent=message;  
     }
 
     catch(error){
