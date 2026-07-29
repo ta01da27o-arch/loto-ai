@@ -1351,6 +1351,40 @@ async function checkLatestData(){
         const loto7=
         await loto7Response.json();
 
+/* ==========================
+JSON取込み
+Version4.0
+========================== */
+
+let importCount=0;
+
+const allData=[
+    ...loto6,
+    ...loto7
+];
+
+allData.forEach(item=>{
+
+    const exists=
+
+    draws.some(draw=>
+
+        draw.game===item.game &&
+
+        draw.round===item.round
+
+    );
+
+    if(!exists){
+
+        draws.push(item);
+
+        importCount++;
+
+    }
+
+});
+
         document.getElementById(
             "updateProgress"
         ).value=100;
@@ -1366,13 +1400,14 @@ async function checkLatestData(){
         "取得完了";
 
         document.getElementById(
-            "updateLog"
-        ).textContent=
+    "updateLog"
+).textContent=
 
-        "ロト6："+loto6.length+
-        "件 / ロト7："+loto7.length+
-        "件";
-
+"ロト6："+loto6.length+
+"件 / ロト7："+loto7.length+
+"件\n"+
+"追加："+importCount+"件";
+        
     }
 
     catch(error){
