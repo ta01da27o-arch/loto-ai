@@ -326,6 +326,17 @@ class="resultBox">
 
 </button>
 
+<label>
+
+<input
+type="checkbox"
+id="autoUpdate"
+checked>
+
+起動時に自動更新
+
+</label>
+
 <input
 type="file"
 id="csvFile"
@@ -3345,13 +3356,29 @@ text+="\n\n";
 
 /* ==========================
 起動
+Version4.0
 ========================== */
 
 window.onload=function(){
 
     initializeApp();
 
-};  
+    const auto=
+
+    document.getElementById(
+        "autoUpdate"
+    );
+
+    if(
+        auto &&
+        auto.checked
+    ){
+
+        checkLatestData();
+
+    }
+
+};
 
 </script>
 
