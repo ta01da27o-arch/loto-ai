@@ -1268,6 +1268,12 @@ const DATA_SOURCE={
 
 };
 
+/* ==========================
+Version4.0
+GitHubデータ取得
+Part4-3A
+========================== */
+
 async function checkLatestData(){
 
     try{
@@ -1275,40 +1281,75 @@ async function checkLatestData(){
         document.getElementById(
             "updateStatusBox"
         ).textContent=
-
         "GitHub接続中...";
 
         document.getElementById(
             "updateProgress"
-        ).value=20;
+        ).value=10;
 
         document.getElementById(
             "updatePercent"
-        ).textContent="20%";
+        ).textContent=
+        "10%";
 
         document.getElementById(
             "updateLog"
         ).textContent=
+        "ロト6データ取得中...";
 
-        "ロト6データへ接続しています...";
+        /* ロト6取得 */
 
-        const response=
-
+        const loto6Response=
         await fetch(
-
             DATA_SOURCE.loto6
-
         );
 
-        if(!response.ok){
+        if(
+            !loto6Response.ok
+        ){
 
             throw new Error(
-
-                "データ取得失敗"
-
+                "ロト6取得失敗"
             );
 
         }
+
+        const loto6=
+        await loto6Response.json();
+
+        document.getElementById(
+            "updateProgress"
+        ).value=50;
+
+        document.getElementById(
+            "updatePercent"
+        ).textContent=
+        "50%";
+
+        document.getElementById(
+            "updateLog"
+        ).textContent=
+        "ロト7データ取得中...";
+
+        /* ロト7取得 */
+
+        const loto7Response=
+        await fetch(
+            DATA_SOURCE.loto7
+        );
+
+        if(
+            !loto7Response.ok
+        ){
+
+            throw new Error(
+                "ロト7取得失敗"
+            );
+
+        }
+
+        const loto7=
+        await loto7Response.json();
 
         document.getElementById(
             "updateProgress"
@@ -1316,19 +1357,21 @@ async function checkLatestData(){
 
         document.getElementById(
             "updatePercent"
-        ).textContent="100%";
+        ).textContent=
+        "100%";
 
         document.getElementById(
             "updateStatusBox"
         ).textContent=
-
-        "接続成功";
+        "取得完了";
 
         document.getElementById(
             "updateLog"
         ).textContent=
 
-        "GitHubへ正常接続しました。";
+        "ロト6："+loto6.length+
+        "件 / ロト7："+loto7.length+
+        "件";
 
     }
 
@@ -1337,13 +1380,11 @@ async function checkLatestData(){
         document.getElementById(
             "updateStatusBox"
         ).textContent=
-
-        "接続失敗";
+        "取得失敗";
 
         document.getElementById(
             "updateLog"
         ).textContent=
-
         error.message;
 
     }
