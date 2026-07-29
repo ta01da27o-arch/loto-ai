@@ -3355,13 +3355,15 @@ text+="\n\n";
 }
 
 /* ==========================
-起動
 Version4.0
+起動設定保存
+Part4-4B
 ========================== */
 
 window.onload=function(){
 
     initializeApp();
+
 
     const auto=
 
@@ -3369,12 +3371,49 @@ window.onload=function(){
         "autoUpdate"
     );
 
-    if(
-        auto &&
-        auto.checked
-    ){
 
-        checkLatestData();
+    if(auto){
+
+
+        const saved=
+
+        localStorage.getItem(
+            "autoUpdate"
+        );
+
+
+        if(saved!==null){
+
+            auto.checked=
+            saved==="true";
+
+        }
+
+
+        auto.addEventListener(
+
+            "change",
+
+            ()=>{
+
+                localStorage.setItem(
+
+                    "autoUpdate",
+
+                    auto.checked
+
+                );
+
+            }
+
+        );
+
+
+        if(auto.checked){
+
+            checkLatestData();
+
+        }
 
     }
 
