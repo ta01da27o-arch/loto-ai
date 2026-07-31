@@ -3402,33 +3402,59 @@ text+="\n\n";
 /* ==========================
 Version4.0
 AI予想履歴保存
-Part5-1B
+Part5-1C
 ========================== */
 
 if(predicts.length>0){
 
-    aiHistory.push({
+    const currentRound=
+
+    draws.length>0
+    ?draws[draws.length-1].round
+    :0;
+
+    const historyData={
 
         game:game,
 
-        round:
-        draws.length>0
-        ?draws[draws.length-1].round
-        :0,
+        round:currentRound,
 
         date:
         new Date()
         .toISOString()
         .slice(0,10),
 
-        predict:
-        [...predicts[0].numbers],
+        predict:[...predicts[0].numbers],
 
         winning:[],
 
         match:0
 
-    });
+    };
+
+    const index=
+
+    aiHistory.findIndex(item=>
+
+        item.game===historyData.game &&
+
+        item.round===historyData.round
+
+    );
+
+    if(index>=0){
+
+        /* 更新 */
+
+        aiHistory[index]=historyData;
+
+    }else{
+
+        /* 新規追加 */
+
+        aiHistory.push(historyData);
+
+    }
 
     saveAIHistory();
 
