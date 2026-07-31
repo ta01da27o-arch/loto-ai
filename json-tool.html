@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>JSON生成ツール Version1.0</title>
+
+<style>
+
+*{
+
+margin:0;
+
+padding:0;
+
+box-sizing:border-box;
+
+font-family:
+Meiryo,
+sans-serif;
+
+}
+
+body{
+
+background:#eaf6ff;
+
+padding:15px;
+
+}
+
+.container{
+
+max-width:700px;
+
+margin:auto;
+
+}
+
+header{
+
+background:
+deepskyblue;
+
+color:#fff;
+
+padding:15px;
+
+border-radius:12px;
+
+text-align:center;
+
+box-shadow:
+0 3px 8px
+rgba(0,0,0,.2);
+
+margin-bottom:15px;
+
+}
+
+header h1{
+
+font-size:28px;
+
+}
+
+header p{
+
+margin-top:5px;
+
+font-size:14px;
+
+}
+
+.card{
+
+background:#fff;
+
+border-radius:12px;
+
+padding:15px;
+
+margin-bottom:15px;
+
+box-shadow:
+0 2px 8px
+rgba(0,0,0,.15);
+
+}
+
+.card h2{
+
+font-size:18px;
+
+margin-bottom:10px;
+
+color:#333;
+
+}
+
+label{
+
+display:block;
+
+margin-bottom:8px;
+
+font-weight:bold;
+
+}
+
+select{
+
+width:100%;
+
+padding:10px;
+
+font-size:18px;
+
+border-radius:8px;
+
+border:1px solid #aaa;
+
+}
+
+textarea{
+
+width:100%;
+
+height:220px;
+
+padding:10px;
+
+font-size:16px;
+
+border-radius:8px;
+
+border:1px solid #999;
+
+resize:vertical;
+
+}
+
+button{
+
+width:100%;
+
+padding:14px;
+
+font-size:18px;
+
+border:none;
+
+border-radius:10px;
+
+cursor:pointer;
+
+margin-top:10px;
+
+background:
+deepskyblue;
+
+color:#fff;
+
+font-weight:bold;
+
+}
+
+button:active{
+
+transform:scale(.98);
+
+}
+
+#output{
+
+height:260px;
+
+font-family:
+monospace;
+
+background:#fafafa;
+
+}
+
+.footer{
+
+text-align:center;
+
+margin-top:20px;
+
+font-size:12px;
+
+color:#666;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+<h1>
+
+JSON生成ツール
+
+</h1>
+
+<p>
+
+Version1.0
+
+</p>
+
+</header>
+
+<div class="card">
+
+<h2>
+
+ゲーム選択
+
+</h2>
+
+<label>
+
+対象ゲーム
+
+</label>
+
+<select id="gameType">
+
+<option value="loto6">
+
+ロト6
+
+</option>
+
+<option value="loto7">
+
+ロト7
+
+</option>
+
+</select>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+CSVデータ貼付
+
+</h2>
+
+<label>
+
+CSVデータ
+
+</label>
+
+<textarea
+
+id="csvInput"
+
+placeholder="例
+
+1,2000-10-05,2,8,10,13,27,30
+
+2,2000-10-12,1,9,16,20,21,43"
+
+></textarea>
+
+<input
+type="file"
+id="csvFile"
+accept=".csv,text/csv"
+style="margin-top:10px;width:100%;">
+
+<button
+id="btnGenerate">
+
+JSON生成
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+JSON結果
+
+</h2>
+
+<label>
+
+生成されたJSON
+
+</label>
+
+<textarea
+
+id="output"
+
+readonly
+
+placeholder="ここにJSONが表示されます"
+
+></textarea>
+
+<button
+
+id="btnCopy"
+
+>
+
+コピー
+
+</button>
+
+<button
+
+id="btnDownload"
+
+>
+
+JSON保存
+
+</button>
+
+<div
+id="infoBox"
+style="
+margin-top:10px;
+padding:10px;
+background:#eef8ff;
+border-radius:8px;
+font-weight:bold;
+">
+
+生成情報
+
+</div>
+
+</div>
+
+<div class="footer">
+
+JSON生成ツール
+
+Version1.0
+
+</div>
+
+<script>
+
+/* ==========================
+Version1.0
+初期化
+========================== */
+
+const gameType=
+document.getElementById(
+"gameType"
+);
+
+const csvInput=
+document.getElementById(
+"csvInput"
+);
+
+const output=
+document.getElementById(
+"output"
+);
+
+const btnGenerate=
+document.getElementById(
+"btnGenerate"
+);
+
+const btnCopy=
+document.getElementById(
+"btnCopy"
+);
+
+const btnDownload=
+document.getElementById(
+"btnDownload"
+);
+
+const csvFile=
+document.getElementById(
+"csvFile"
+);
+
+const infoBox=
+document.getElementById(
+"infoBox"
+);
+
+/* ==========================
+CSV解析
+Version1.0 Part1-2A
+========================== */
+
+btnGenerate.addEventListener(
+
+"click",
+
+function(){
+
+let game=
+
+gameType.value;
+
+
+const lines=
+
+csvInput.value
+
+.replace(/\r/g,"")
+
+.trim()
+
+.split("\n")
+
+.map(line=>line.trim())
+
+.filter(line=>line!=="");
+
+const firstColumn =
+
+lines[0].includes("\t")
+
+?
+
+lines[0].split("\t")[0]
+
+:
+
+lines[0].split(",")[0];
+
+if(
+
+lines.length>0 &&
+
+isNaN(Number(firstColumn))
+
+){
+
+    lines.shift();
+
+}
+
+
+if(
+
+lines.length===0 ||
+
+lines[0]===""
+
+){
+
+alert(
+
+"CSVデータを入力してください。"
+
+);
+
+return;
+
+}
+
+
+let result=[];
+
+let errors=[];
+
+let successCount=0;
+
+const roundSet=new Set();
+
+lines.forEach(
+
+line=>{
+
+
+const data=
+
+line
+
+.includes("\t")
+
+?
+
+line.split("\t")
+
+:
+
+line.split(",");
+
+const cleanData=
+
+data.map(
+
+item=>item.trim()
+
+);
+
+if(data.length===0){
+
+return;
+
+}
+
+/* ==========================
+ゲーム自動判定
+Version1.0 Part2-3A
+========================== */
+
+if(line!==lines[0]){
+
+}else{
+
+const cols=
+
+cleanData.length;
+
+
+/* ロト6 */
+
+if(cols===8){
+
+    game="loto6";
+
+    gameType.value="loto6";
+
+}
+
+
+/* ロト7（ボーナスあり） */
+
+else if(cols===10){
+
+    game="loto7";
+
+    gameType.value="loto7";
+
+}
+
+
+/* 判定できない9列 */
+
+else if(cols===9){
+
+    /* 手動選択を優先 */
+
+    game=
+
+    gameType.value;
+
+}
+
+}
+
+const round=Number(cleanData[0]);
+
+const date=cleanData[1];
+
+if(roundSet.has(round)){
+
+    errors.push(
+    "round "+round+
+    " が重複しています"
+    );
+
+    return;
+
+}
+
+roundSet.add(round);
+
+if(!round){
+
+errors.push(
+"回数がありません"
+);
+
+return;
+
+}
+
+
+if(!date){
+
+errors.push(
+"日付がありません"
+);
+
+return;
+
+}
+
+if(
+
+game==="loto6"
+
+){
+
+
+if(cleanData.length<8){
+
+errors.push(
+"round "+round+
+" データ不足"
+);
+
+return;
+
+}
+
+const numbers=
+
+cleanData.slice(2,8)
+
+.map(Number);
+
+
+if(numbers.length!==6){
+
+errors.push(
+"round "+round+
+" 数字が6個ではありません"
+);
+
+return;
+
+}
+
+
+if(new Set(numbers).size!==6){
+
+errors.push(
+"round "+round+
+" 数字が重複しています"
+);
+
+return;
+
+}
+
+
+if(numbers.some(n=>n<1 || n>43)){
+
+errors.push(
+"round "+round+
+" 範囲外の数字があります"
+);
+
+return;
+
+}
+
+
+result.push({
+
+game:"loto6",
+
+round:round,
+
+date:date,
+
+numbers:numbers
+
+});
+
+successCount++;
+
+}
+
+
+else{
+
+
+if(cleanData.length<9){
+
+errors.push(
+"round "+round+
+" データ不足"
+);
+
+return;
+
+}
+
+
+const numbers=
+
+cleanData.slice(2,9)
+
+.map(Number);
+
+
+if(numbers.length!==7){
+
+errors.push(
+"round "+round+
+" 数字が7個ではありません"
+);
+
+return;
+
+}
+
+
+if(new Set(numbers).size!==7){
+
+errors.push(
+"round "+round+
+" 数字が重複しています"
+);
+
+return;
+
+}
+
+
+if(numbers.some(n=>n<1 || n>37)){
+
+errors.push(
+"round "+round+
+" 範囲外の数字があります"
+);
+
+return;
+
+}
+
+
+result.push({
+
+game:"loto7",
+
+round:round,
+
+date:date,
+
+numbers:numbers
+
+});
+
+successCount++;
+
+}
+
+
+}
+
+
+);
+
+
+if(errors.length>0){
+
+alert(
+errors.join("\n")
+);
+
+return;
+
+}
+
+output.value=
+
+JSON.stringify(
+
+result,
+
+null,
+
+2
+
+);
+
+/* ==========================
+JSON出力情報
+Version1.0 Part1-3B
+========================== */
+
+infoBox.textContent=
+
+"生成件数："+successCount+"件\n"+
+
+"エラー："+errors.length+"件\n"+
+
+"ゲーム："+game;
+
+}
+
+);
+
+/* ==========================
+コピー
+========================== */
+
+btnCopy.addEventListener(
+
+"click",
+
+async function(){
+
+if(
+
+output.value===""
+
+){
+
+alert(
+
+"コピーするデータがありません。"
+
+);
+
+return;
+
+}
+
+try{
+
+output.select();
+
+document.execCommand(
+"copy"
+);
+
+alert(
+"コピーしました。"
+);
+
+}
+
+catch(error){
+
+alert(
+"コピーできませんでした。"
+);
+
+}
+
+});
+
+/* ==========================
+CSVファイル読込
+Version1.0 Part2-4A
+========================== */
+
+csvFile.addEventListener(
+
+"change",
+
+function(event){
+
+const file=
+
+event.target.files[0];
+
+if(!file){
+
+return;
+
+}
+
+const reader=
+
+new FileReader();
+
+reader.onload=
+
+function(e){
+
+csvInput.value=
+
+e.target.result;
+
+};
+
+reader.readAsText(
+
+file,
+
+"UTF-8"
+
+);
+
+});
+
+/* ==========================
+JSON保存
+========================== */
+
+btnDownload.addEventListener(
+
+"click",
+
+function(){
+
+if(output.value===""){
+
+alert(
+"JSONがありません。"
+);
+
+return;
+
+}
+
+
+const blob=
+
+new Blob(
+
+[output.value],
+
+{
+
+type:"application/json"
+
+}
+
+);
+
+
+const a=
+
+document.createElement(
+"a"
+);
+
+
+a.href=
+
+URL.createObjectURL(
+blob
+);
+
+
+const today=new Date();
+
+const yyyy=today.getFullYear();
+
+const mm=String(
+today.getMonth()+1
+).padStart(2,"0");
+
+const dd=String(
+today.getDate()
+).padStart(2,"0");
+
+a.download=
+
+gameType.value+
+"_"+
+
+yyyy+
+mm+
+dd+
+
+".json";
+
+
+a.click();
+
+
+URL.revokeObjectURL(
+a.href
+);
+
+
+});
+
+/* ==========================
+起動
+========================== */
+
+window.onload=function(){
+
+csvInput.focus();
+
+};
+
+</script>
+
+</body>
+
+</html>

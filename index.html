@@ -514,6 +514,55 @@ let draws = [];
 let updateRunning = false;
 
 /* ==========================
+Version4.0
+AI学習履歴
+Part5-1A
+========================== */
+
+let aiHistory=[];
+
+const AI_HISTORY_KEY=
+
+"aiHistory";
+
+
+function loadAIHistory(){
+
+    const data=
+
+    localStorage.getItem(
+        AI_HISTORY_KEY
+    );
+
+
+    if(data){
+
+        aiHistory=
+
+        JSON.parse(data);
+
+    }else{
+
+        aiHistory=[];
+
+    }
+
+}
+
+
+function saveAIHistory(){
+
+    localStorage.setItem(
+
+        AI_HISTORY_KEY,
+
+        JSON.stringify(aiHistory)
+
+    );
+
+}
+
+/* ==========================
 最新抽選データ
 ========================== */
 
@@ -3364,6 +3413,7 @@ window.onload=function(){
 
     initializeApp();
 
+    loadAIHistory();
 
     const auto=
 
