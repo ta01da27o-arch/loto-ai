@@ -3399,6 +3399,41 @@ text+="\n\n";
 
 }
 
+/* ==========================
+Version4.0
+AI予想履歴保存
+Part5-1B
+========================== */
+
+if(predicts.length>0){
+
+    aiHistory.push({
+
+        game:game,
+
+        round:
+        draws.length>0
+        ?draws[draws.length-1].round
+        :0,
+
+        date:
+        new Date()
+        .toISOString()
+        .slice(0,10),
+
+        predict:
+        [...predicts[0].numbers],
+
+        winning:[],
+
+        match:0
+
+    });
+
+    saveAIHistory();
+
+}
+
     result.textContent=text;
 
 }
